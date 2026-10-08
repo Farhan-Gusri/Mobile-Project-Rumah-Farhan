@@ -18,7 +18,18 @@ class Lays1 : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnSubmit.setOnClickListener {
-            val intent = Intent(this, halaman2::class.java)
+            val intent = Intent(this, AboutLays::class.java)
+            startActivity(intent)
+        }
+
+        binding.btnLogin.setOnClickListener {
+            val intent = Intent(this, HalamanKedua::class.java)
+            startActivity(intent)
+        }
+
+        // Tombol menuju AuthActivity (otomatis cek SharedPreferences ke MainActivity)
+        binding.btnToMain.setOnClickListener {
+            val intent = Intent(this, AuthActivity::class.java)
             startActivity(intent)
         }
     }

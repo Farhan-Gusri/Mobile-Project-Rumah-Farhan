@@ -3,7 +3,7 @@ package com.example.fgf_lays
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 
-class halaman2 : AppCompatActivity() {
+class AboutLays : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
