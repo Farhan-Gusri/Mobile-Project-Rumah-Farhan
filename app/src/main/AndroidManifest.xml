@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.FGFLAYS">
+
+        <!-- SplashScreenActivity sebagai LAUNCHER (Halaman Utama Pembuka) -->
+        <activity
+            android:name=".SplashScreenActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".Lays1"
+            android:exported="false" />
+
+        <activity
+            android:name=".AuthActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AboutLays"
+            android:exported="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".HalamanKedua"
+            android:exported="false" />
+
+        <!-- DIUBAH: Disamakan menggunakan tanda titik (.RegisterActivity) -->
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+
+        <activity android:name=".VerificationActivity"
+            android:exported="false" />
+
+
+    </application>
+
+</manifest>
