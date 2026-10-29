@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Warna Utama Mode Gelap -->
+    <color name="primary_color">#1E293B</color>
+
+    <!-- Warna Background & Kartu Mode Gelap -->
+    <color name="bg_main">#0F172A</color>
+    <color name="bg_card">#1E293B</color>
+
+    <!-- Warna Teks Mode Gelap -->
+    <color name="text_main">#F8FAFC</color>
+    <color name="text_sub">#94A3B8</color>
+</resources>

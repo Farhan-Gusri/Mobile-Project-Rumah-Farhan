@@ -9,10 +9,10 @@
 
     <ImageView
         android:id="@+id/imgLogo"
-        android:layout_width="350dp"
-        android:layout_height="625dp"
+        android:layout_width="435dp"
+        android:layout_height="641dp"
         android:contentDescription="Logo Futsal Event"
-        android:src="@drawable/futsalscreen" />
+        android:src="@drawable/splassfutsalpro" />
 
 
     <TextView
