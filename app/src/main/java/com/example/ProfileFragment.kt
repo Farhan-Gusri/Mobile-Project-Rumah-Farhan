@@ -15,35 +15,52 @@ import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import com.example.fgf_lays.AuthActivity
 import com.example.fgf_lays.databinding.FragmentProfileBinding
+import java.io.File
+import java.io.FileOutputStream
 
 class ProfileFragment : Fragment() {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
-    // Memilih foto dari galeri
+    // Memilih foto dari galeri dan menyalinnya ke penyimpanan internal aplikasi
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            val sharedPref = requireActivity().getSharedPreferences(
-                "user_pref",
-                Context.MODE_PRIVATE
+            val savedPath = copyUriToInternalStorage(
+                requireContext(),
+                it,
+                "profile_picture.jpg"
             )
 
-            // Simpan URI foto agar tetap digunakan saat aplikasi dibuka kembali
-            sharedPref.edit {
-                putString("profile_image_uri", it.toString())
+            if (savedPath != null) {
+                val sharedPref = requireActivity().getSharedPreferences(
+                    "user_pref",
+                    Context.MODE_PRIVATE
+                )
+
+                // Simpan path file lokal (bukan URI sementara galeri)
+                sharedPref.edit {
+                    putString("profile_image_uri", savedPath)
+                }
+
+                // Tampilkan foto dari file lokal
+                binding.ivProfilePicture.setImageURI(null) // Reset cache ImageView
+                binding.ivProfilePicture.setImageURI(Uri.fromFile(File(savedPath)))
+
+                Toast.makeText(
+                    requireContext(),
+                    "Foto profil berhasil diperbarui!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Gagal memuat gambar",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-
-            // Tampilkan foto yang dipilih
-            binding.ivProfilePicture.setImageURI(it)
-
-            Toast.makeText(
-                requireContext(),
-                "Foto profil berhasil diperbarui!",
-                Toast.LENGTH_SHORT
-            ).show()
         }
     }
 
@@ -72,14 +89,19 @@ class ProfileFragment : Fragment() {
         val savedName = sharedPref.getString("user_name", "Belum diatur")
         binding.tvProfileName.text = "Nama: $savedName"
 
-        // Memuat foto profil yang tersimpan
-        val savedImageUri = sharedPref.getString("profile_image_uri", null)
+        // Memuat foto profil yang tersimpan dengan aman
+        val savedImagePath = sharedPref.getString("profile_image_uri", null)
 
-        if (!savedImageUri.isNullOrEmpty()) {
-            try {
-                binding.ivProfilePicture.setImageURI(Uri.parse(savedImageUri))
-            } catch (e: Exception) {
-                e.printStackTrace()
+        if (!savedImagePath.isNullOrEmpty()) {
+            // Cek apakah data lama masih berupa URI "content://" yang menyebabkan crash
+            if (savedImagePath.startsWith("content://")) {
+                // Hapus URI lama yang kadaluarsa agar tidak crash
+                sharedPref.edit { remove("profile_image_uri") }
+            } else {
+                val file = File(savedImagePath)
+                if (file.exists()) {
+                    binding.ivProfilePicture.setImageURI(Uri.fromFile(file))
+                }
             }
         }
 
@@ -130,6 +152,26 @@ class ProfileFragment : Fragment() {
                     dialog.dismiss()
                 }
                 .show()
+        }
+    }
+
+    // Fungsi menyalin file gambar dari galeri ke folder internal aplikasi
+    private fun copyUriToInternalStorage(
+        context: Context,
+        uri: Uri,
+        fileName: String
+    ): String? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val file = File(context.filesDir, fileName)
+            val outputStream = FileOutputStream(file)
+            inputStream.copyTo(outputStream)
+            inputStream.close()
+            outputStream.close()
+            file.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 

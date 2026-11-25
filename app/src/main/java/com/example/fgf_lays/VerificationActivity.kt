@@ -1,6 +1,6 @@
+
 package com.example.fgf_lays
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -17,48 +17,57 @@ class VerificationActivity : AppCompatActivity() {
         val tvNama = findViewById<TextView>(R.id.tvNama)
         val tvEmail = findViewById<TextView>(R.id.tvEmail)
         val tvTglLahir = findViewById<TextView>(R.id.tvTglLahir)
-        val tvJenisKelamin = findViewById<TextView>(R.id.tvJenisKelamin)
+        val tvJenisKelamin =
+            findViewById<TextView>(R.id.tvJenisKelamin)
         val tvUsername = findViewById<TextView>(R.id.tvUsername)
         val tvPassword = findViewById<TextView>(R.id.tvPassword)
 
         val btnSubmit = findViewById<Button>(R.id.btnSubmit)
         val btnKembali = findViewById<Button>(R.id.btnKembali)
 
-        // Ambil data dari SharedPreferences
-        val sharedPref = getSharedPreferences("UserPref", Context.MODE_PRIVATE)
+        val sharedPref = getSharedPreferences(
+            "UserPref",
+            MODE_PRIVATE
+        )
+
         val nama = sharedPref.getString("NAMA", "") ?: ""
         val email = sharedPref.getString("EMAIL", "") ?: ""
         val tglLahir = sharedPref.getString("TGL_LAHIR", "") ?: ""
         val gender = sharedPref.getString("JENIS_KELAMIN", "") ?: ""
         val username = sharedPref.getString("USERNAME", "") ?: ""
-        val password = sharedPref.getString("PASSWORD", "") ?: ""
 
-        // Tampilkan ke layar
         tvNama.text = "Nama: $nama"
         tvEmail.text = "Email: $email"
         tvTglLahir.text = "Tanggal Lahir: $tglLahir"
         tvJenisKelamin.text = "Jenis Kelamin: $gender"
         tvUsername.text = "Username: $username"
-        tvPassword.text = "Password: $password"
+        tvPassword.text = "Password: tidak ditampilkan demi keamanan"
 
-        // Tombol Kembali
         btnKembali.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
             finish()
         }
 
-        // Tombol Submit (Validasi Data SP)
         btnSubmit.setOnClickListener {
-            if (nama.isEmpty() || email.isEmpty() || tglLahir.isEmpty() ||
-                gender.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Validasi Gagal: Ada data yang kosong!", Toast.LENGTH_SHORT).show()
+            if (nama.isEmpty() || email.isEmpty() ||
+                tglLahir.isEmpty() || gender.isEmpty() ||
+                username.isEmpty()
+            ) {
+                Toast.makeText(
+                    this,
+                    "Data pendaftaran tidak lengkap!",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
-            Toast.makeText(this, "Registrasi Berhasil!", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                "Pendaftaran dikirim. Silakan periksa email untuk konfirmasi jika diminta.",
+                Toast.LENGTH_LONG
+            ).show()
 
-            // Lanjut ke AuthActivity/Login
             val intent = Intent(this, AuthActivity::class.java)
             startActivity(intent)
             finish()

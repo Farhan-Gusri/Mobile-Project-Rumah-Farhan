@@ -1,3 +1,4 @@
+
 package com.example.fgf_lays
 
 import android.app.DatePickerDialog
@@ -16,7 +17,6 @@ class RegisterActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Pastikan nama layout XML kamu activity_register
         setContentView(R.layout.activity_register)
 
         val etNama = findViewById<EditText>(R.id.etNama)
@@ -28,61 +28,125 @@ class RegisterActivity : AppCompatActivity() {
         val etConfirmPassword = findViewById<EditText>(R.id.etConfirmPassword)
         val btnSelanjutnya = findViewById<Button>(R.id.btnSelanjutnya)
 
-        // DatePicker Tanggal Lahir
         etTanggalLahir.setOnClickListener {
             val calendar = Calendar.getInstance()
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-            val datePicker = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
-                val dateStr = "$selectedDay/${selectedMonth + 1}/$selectedYear"
-                etTanggalLahir.setText(dateStr)
-            }, year, month, day)
+            val datePicker = DatePickerDialog(
+                this,
+                { _, selectedYear, selectedMonth, selectedDay ->
+                    val dateStr =
+                        "$selectedDay/${selectedMonth + 1}/$selectedYear"
+                    etTanggalLahir.setText(dateStr)
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            )
 
             datePicker.show()
         }
 
-        // Simpan ke SharedPreferences
         btnSelanjutnya.setOnClickListener {
             val nama = etNama.text.toString().trim()
             val email = etEmail.text.toString().trim()
             val tglLahir = etTanggalLahir.text.toString().trim()
             val username = etUsername.text.toString().trim()
-            val password = etPassword.text.toString().trim()
-            val confirmPassword = etConfirmPassword.text.toString().trim()
+            val password = etPassword.text.toString()
+            val confirmPassword = etConfirmPassword.text.toString()
 
             val selectedGenderId = rgJenisKelamin.checkedRadioButtonId
+
             val gender = if (selectedGenderId != -1) {
                 findViewById<RadioButton>(selectedGenderId).text.toString()
-            } else ""
+            } else {
+                ""
+            }
 
             if (nama.isEmpty() || email.isEmpty() || tglLahir.isEmpty() ||
-                gender.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Harap isi semua kolom!", Toast.LENGTH_SHORT).show()
+                gender.isEmpty() || username.isEmpty() ||
+                password.isEmpty() || confirmPassword.isEmpty()
+            ) {
+                Toast.makeText(
+                    this,
+                    "Harap isi semua kolom!",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
             if (password != confirmPassword) {
-                Toast.makeText(this, "Password tidak cocok!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Password tidak cocok!",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
-            val sharedPref = getSharedPreferences("UserPref", Context.MODE_PRIVATE)
-            val editor = sharedPref.edit()
-            editor.putString("NAMA", nama)
-            editor.putString("EMAIL", email)
-            editor.putString("TGL_LAHIR", tglLahir)
-            editor.putString("JENIS_KELAMIN", gender)
-            editor.putString("USERNAME", username)
-            editor.putString("PASSWORD", password)
-            editor.apply()
+            if (password.length < 6) {
+                Toast.makeText(
+                    this,
+                    "Password minimal 6 karakter!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
 
-            Toast.makeText(this, "Data Berhasil Disimpan!", Toast.LENGTH_SHORT).show()
+            btnSelanjutnya.isEnabled = false
+            btnSelanjutnya.text = "Mendaftarkan..."
 
-            val intent = Intent(this, VerificationActivity::class.java)
-            startActivity(intent)
-            finish()
+            Thread {
+                val result = SupabaseAuthService.register(
+                    nama = nama,
+                    email = email,
+                    password = password,
+                    username = username,
+                    tglLahir = tglLahir,
+                    gender = gender
+                )
+
+                runOnUiThread {
+                    btnSelanjutnya.isEnabled = true
+                    btnSelanjutnya.text = "Selanjutnya"
+
+                    if (result == "BERHASIL") {
+                        val sharedPref = getSharedPreferences(
+                            "UserPref",
+                            Context.MODE_PRIVATE
+                        )
+
+                        sharedPref.edit().apply {
+                            putString("NAMA", nama)
+                            putString("EMAIL", email)
+                            putString("TGL_LAHIR", tglLahir)
+                            putString("JENIS_KELAMIN", gender)
+                            putString("USERNAME", username)
+                            remove("PASSWORD")
+                            apply()
+                        }
+
+                        Toast.makeText(
+                            this,
+                            "Akun berhasil dibuat. Periksa email kamu.",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        val intent = Intent(
+                            this,
+                            VerificationActivity::class.java
+                        )
+                        startActivity(intent)
+                        finish()
+
+                    } else {
+                        Toast.makeText(
+                            this,
+                            result,
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }.start()
         }
     }
 }

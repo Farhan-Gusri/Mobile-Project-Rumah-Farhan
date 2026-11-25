@@ -1,6 +1,6 @@
+
 package com.example.fgf_lays
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -19,41 +19,55 @@ class AuthActivity : AppCompatActivity() {
         val btnLogin = findViewById<Button>(R.id.btnLogin)
         val btnRegister = findViewById<Button>(R.id.btnRegister)
 
-        btnLogin?.setOnClickListener {
-            val inputUser = etUsername.text.toString().trim()
-            val inputPass = etPassword.text.toString().trim()
+        btnLogin.setOnClickListener {
 
-            // Jika inputan masih kosong, langsung tolak
-            if (inputUser.isEmpty() || inputPass.isEmpty()) {
-                Toast.makeText(this, "Username dan Password tidak boleh kosong!", Toast.LENGTH_SHORT).show()
+            val email = etUsername.text.toString().trim()
+            val password = etPassword.text.toString()
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    "Email dan Password tidak boleh kosong!",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
-            // Ambil data user yang pernah mendaftar di SharedPreferences
-            val sharedPref = getSharedPreferences("UserPref", Context.MODE_PRIVATE)
-            val spUser = sharedPref.getString("USERNAME", "") ?: ""
-            val spPass = sharedPref.getString("PASSWORD", "") ?: ""
+            btnLogin.isEnabled = false
 
-            // Pengecekan 2 Aturan Soal:
-            // Aturan 1: Username sama dengan Password
-            val isRule1Valid = (inputUser == inputPass)
+            Thread {
+                val result = SupabaseAuthService.login(
+                    this,
+                    email,
+                    password
+                )
 
-            // Aturan 2: Username & Password cocok dengan data SharedPreferences
-            val isRule2Valid = (spUser.isNotEmpty() && inputUser == spUser && inputPass == spPass)
+                runOnUiThread {
+                    btnLogin.isEnabled = true
 
-            // Jalankan salah satu aturan
-            if (isRule1Valid || isRule2Valid) {
-                Toast.makeText(this, "Login Berhasil!", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
-            } else {
-                Toast.makeText(this, "Login Gagal: Username atau Password tidak sesuai!", Toast.LENGTH_SHORT).show()
-            }
+                    if (result == "BERHASIL") {
+                        Toast.makeText(
+                            this,
+                            "Login Berhasil!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+
+                    } else {
+                        Toast.makeText(
+                            this,
+                            result,
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }.start()
         }
 
-        // Navigasi ke Halaman Registrasi
-        btnRegister?.setOnClickListener {
+        btnRegister.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
